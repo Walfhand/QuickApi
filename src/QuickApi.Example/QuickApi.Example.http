@@ -1,0 +1,7 @@
+GET http://localhost:5062/weatherforecast/
+Accept: application/json
+
+###
+
+GET http://localhost:5062/api/todos/6a1aa97e-f4c0-4458-952c-58c655874978
+Accept: application/json
