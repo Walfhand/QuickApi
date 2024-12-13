@@ -1,0 +1,19 @@
+{
+    email vandaele.seba@gmail.com
+}
+
+http://* {
+    redir https://{host}{uri} permanent
+}
+
+api.localhost {
+    reverse_proxy http://api:8080 {
+        header_up Host {host}
+        header_up X-Real-IP {remote}
+        header_up X-Forwarded-For {remote}
+        header_up X-Forwarded-Proto {scheme}
+        header_up X-Forwarded-Host {host}
+        header_up Connection keep-alive
+        header_up Upgrade {>Upgrade}
+    }
+}

@@ -1,0 +1,47 @@
+services:
+  api:
+    image: quick-api
+    build:
+      context: ./src
+      dockerfile: QuickApi.Example/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+    depends_on:
+      caddy:
+        condition: service_started
+      database:
+        condition: service_healthy
+      
+  database:
+    image: postgres
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5433:5432"
+    volumes:
+      - data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U user" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+  
+  caddy:
+    image: caddy:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+
+
+volumes:
+  data:
+    driver: local
+  caddy_data:
+  caddy_config:
