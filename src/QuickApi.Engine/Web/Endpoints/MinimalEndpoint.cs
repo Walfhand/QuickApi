@@ -4,6 +4,12 @@ using QuickApi.Engine.Web.Endpoints.Enums;
 
 namespace QuickApi.Engine.Web.Endpoints;
 
+public abstract class MinimalEndpoint(
+    EndpointType endpointType,
+    string path,
+    params string[] policies)
+    : MinimalEndpoint<object>(endpointType, path, policies);
+
 public abstract class MinimalEndpoint<TResult> : IMinimalEndpoint
 {
     private readonly EndpointType _endpointType;
