@@ -5,6 +5,7 @@ using QuickApi.Engine.Web;
 using QuickApi.Engine.Web.Cqrs;
 using QuickApi.Example.Config.Cors;
 using QuickApi.Example.Cqrs;
+using QuickApi.Example.Data.Configs;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +14,8 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Pr
 builder.Services.AddScoped<IMessage, MessageService>();
 builder.Services.AddCustomCors();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddData();
+
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
@@ -46,6 +49,7 @@ builder.Services.AddOpenApi(options =>
 });
 
 var app = builder.Build();
+app.UseData();
 app.UseForwardedHeaders();
 app.MapOpenApi();
 app.MapScalarApiReference();

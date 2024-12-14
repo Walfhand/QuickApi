@@ -5,30 +5,32 @@ using QuickApi.Engine.Web.Endpoints.Impl;
 using QuickApi.Example.Data.Contexts;
 using QuickApi.Example.Features.Todos.Domain;
 
-namespace QuickApi.Example.Features.Todos.GetTodo.Endpoints;
+namespace QuickApi.Example.Features.Todos.CompleteTodo.Endpoints;
 
-public record GetTodoRequest : IRequest<Todo>
+public record CompleteTodoRequest: IRequest
 {
     [FromRoute] public Guid Id { get; set; }
-}
+} 
 
-public class GetTodoEndpoint() : GetMinimalEndpoint<GetTodoRequest, Todo>("todos/{id:guid}")
+public class CompleteTodoEndpoint() : PatchMinimalEndpoint<CompleteTodoRequest>("todos/{id:guid}/complete")
 {
+    
 }
 
-public class GetTodoRequestHandler : IRequestHandler<GetTodoRequest, Todo>
+public class CompleteTodoRequestHandler : IRequestHandler<CompleteTodoRequest>
 {
     private readonly IDbContext _context;
 
-    public GetTodoRequestHandler(IDbContext context)
+    public CompleteTodoRequestHandler(IDbContext context)
     {
         _context = context;
     }
-    public async Task<Todo> Handle(GetTodoRequest request, CancellationToken cancellationToken)
+    public async Task Handle(CompleteTodoRequest request, CancellationToken cancellationToken)
     {
         var todo = await _context.Set<Todo>().FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
         if (todo is null)
             throw new Exception($"todo with {request.Id} Not found");
-        return todo;
+        todo.Complete();
+        await _context.SaveChangeAsync(cancellationToken);
     }
 }
