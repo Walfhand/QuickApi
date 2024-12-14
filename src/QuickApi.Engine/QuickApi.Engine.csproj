@@ -8,6 +8,7 @@
         <PackageId>Walfhand.QuickApi</PackageId>
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
         <Authors>Walfhand</Authors>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
         <Description>A library designed to simplify the usage of Minimal APIs in .NET by providing a framework and seamless integration with various CQRS libraries.
             It helps developers accelerate their projects by reducing boilerplate code and offering a structured way to implement APIs with CQRS patterns.</Description>
         <PackageTags>MinimalAPI;CQRS;Framework;.NET;API;Integration;REST;CleanArchitecture;Command;Query;EventDriven;DotNet;Microservices;DDD;ApplicationFramework;Middleware</PackageTags>
