@@ -184,14 +184,14 @@ public class FilterTodoEndpointCustom() : FilterMinimalEndpoint<FilterTodoReques
 
 QuickApi provides several base classes to simplify the creation of endpoints:
 
-- **`PostMinimalEndpoint<TRequest, TResponse>`**: For POST requests.
-- **`GetMinimalEndpoint<TResponse>`**: For GET requests.
-- **`PutMinimalEndpoint<TRequest, TResponse>`**: For PUT requests.
-- **`DeleteMinimalEndpoint<TRequest>`**: For DELETE requests.
-- **`PatchMinimalEndpoint<TRequest, TResponse>`**: For PATCH requests.
-- **`FilterMinimalEndpoint<TResponse>`**: For filtered GET requests.
-- **`FilterPaginateMinimalEndpoint<TResponse>`**: For paginated and filtered GET requests.
-- **`GetFileMinimalEndpoint<TResponse>`**: For serving files.
+- **`PostMinimalEndpoint`**: For POST requests.
+- **`GetMinimalEndpoint`**: For GET requests.
+- **`PutMinimalEndpoint`**: For PUT requests.
+- **`DeleteMinimalEndpoint`**: For DELETE requests.
+- **`PatchMinimalEndpoint`**: For PATCH requests.
+- **`FilterMinimalEndpoint`**: For filtered GET requests.
+- **`FilterPaginateMinimalEndpoint`**: For paginated and filtered GET requests.
+- **`GetFileMinimalEndpoint`**: For serving files.
 
 ### Example Project
 
