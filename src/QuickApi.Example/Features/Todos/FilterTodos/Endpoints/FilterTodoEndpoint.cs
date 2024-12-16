@@ -17,10 +17,11 @@ public class FilterTodoEndpoint() : FilterMinimalEndpoint<FilterTodoRequest, Tod
 
 public class FilterTodoEndpointCustom() : FilterMinimalEndpoint<FilterTodoRequest, Todo>("todos/custom")
 {
-    protected override void Configure(RouteHandlerBuilder routeBuilder)
+    protected override RouteHandlerBuilder Configure(IEndpointRouteBuilder builder)
     {
-        base.Configure(routeBuilder);
-        routeBuilder.ProducesProblem(500);
+        var routeHandlerBuilder = base.Configure(builder);
+        routeHandlerBuilder.ProducesProblem(500);
+        return routeHandlerBuilder;
     }
 
     protected override Delegate Handler => EndpointHandler;

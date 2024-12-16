@@ -154,18 +154,18 @@ public class PoliciesEnum
 You can bypass the `IMessage` interface and MediatR by customizing your endpoint directly:
 
 ```csharp
-using Microsoft.AspNetCore.Mvc;
-using QuickApi.Engine.Web.Endpoints.Impl;
-using QuickApi.Example.Features.Todos.Domain;
-
-namespace QuickApi.Example.Features.Todos.Custom.Endpoints;
-
 public class FilterTodoEndpointCustom() : FilterMinimalEndpoint<FilterTodoRequest, Todo>("todos/custom")
 {
-    protected override void Configure(RouteHandlerBuilder routeBuilder)
+    protected override RouteHandlerBuilder Configure(IEndpointRouteBuilder builder)
     {
-        base.Configure(routeBuilder);
-        routeBuilder.ProducesProblem(500);
+        //call base configure and get routeHandlerBuilder
+        var routeHandlerBuilder = base.Configure(builder);
+        
+        //add your customization
+        routeHandlerBuilder.ProducesProblem(500);
+        
+        //return routeHandlerBuilder custom
+        return routeHandlerBuilder;
     }
 
     protected override Delegate Handler => EndpointHandler;
@@ -173,7 +173,7 @@ public class FilterTodoEndpointCustom() : FilterMinimalEndpoint<FilterTodoReques
     private static async Task<IResult> EndpointHandler([AsParameters] FilterTodoRequest request, IDbContext context, CancellationToken ct)
     {
         var query = context.Set<Todo>().AsQueryable();
-        if (request.IsCompleted.HasValue)
+        if(request.IsCompleted.HasValue)
             query = query.Where(x => x.IsCompleted == request.IsCompleted);
         return Results.Ok(await query.ToListAsync(ct));
     }

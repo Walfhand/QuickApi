@@ -39,40 +39,4 @@ public static class MinimalApiExtensions
 
         return builder;
     }
-    
-    
-    public static RouteHandlerBuilder CreateEndpoint<TEntity>(this IEndpointRouteBuilder builder,
-        EndpointType endpointType, [StringSyntax("Route")] string pattern, Delegate handler)
-    {
-        var context = pattern.Split('/').First();
-        return builder.CreateConvention<TEntity>(endpointType, $"{EndpointPath.BaseApiPath}/{pattern}", handler)
-            .WithTags(context);
-    }
-    
-    private static RouteHandlerBuilder CreateConvention<TEntity>(this IEndpointRouteBuilder builder,
-        EndpointType endpointType, string path, Delegate handler)
-        => endpointType switch
-        {
-            EndpointType.FilterPaginate => builder.MapGet(path, handler)
-                .Produces<PaginatedResult<TEntity>>(),
-            EndpointType.Filter => builder.MapGet(path, handler)
-                .Produces<List<TEntity>>(),
-            EndpointType.Get => builder.MapGet(path, handler)
-                .Produces<TEntity>()
-                .ProducesProblem(404),
-            EndpointType.Post => builder.MapPost(path, handler)
-                .Produces<TEntity>(201)
-                .ProducesValidationProblem(),
-            EndpointType.Put => builder.MapPut(path, handler)
-                .Produces(204)
-                .ProducesProblem(404)
-                .ProducesValidationProblem(),
-            EndpointType.Patch => builder.MapPatch(path, handler).Produces(204)
-                .ProducesProblem(404)
-                .ProducesValidationProblem(),
-            EndpointType.Delete => builder.MapDelete(path, handler).Produces(204)
-                .ProducesProblem(404)
-                .ProducesValidationProblem(),
-            _ => throw new NotImplementedException()
-        };
 }
