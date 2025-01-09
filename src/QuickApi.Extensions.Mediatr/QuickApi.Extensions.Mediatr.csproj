@@ -15,9 +15,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\QuickApi.Abstractions\QuickApi.Abstractions.csproj" PrivateAssets="all"/>
+      <ProjectReference Include="..\QuickApi.Abstractions\QuickApi.Abstractions.csproj"/>
     </ItemGroup>
-
+    
     <ItemGroup>
       <PackageReference Include="MediatR" Version="12.4.1" />
     </ItemGroup>

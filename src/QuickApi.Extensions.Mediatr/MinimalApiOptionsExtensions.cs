@@ -1,3 +1,4 @@
+
 using Microsoft.Extensions.DependencyInjection;
 using QuickApi.Abstractions;
 using QuickApi.Abstractions.Cqrs;

@@ -27,7 +27,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\QuickApi.Abstractions\QuickApi.Abstractions.csproj" />
       <ProjectReference Include="..\QuickApi.Engine\QuickApi.Engine.csproj" />
       <ProjectReference Include="..\QuickApi.Extensions.Mediatr\QuickApi.Extensions.Mediatr.csproj" />
     </ItemGroup>

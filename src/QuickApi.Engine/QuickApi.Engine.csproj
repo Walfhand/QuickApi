@@ -24,6 +24,6 @@
         <Content Include="README.md" Pack="true" />
     </ItemGroup>
     <ItemGroup>
-      <ProjectReference Include="..\QuickApi.Abstractions\QuickApi.Abstractions.csproj" PrivateAssets="all"/>
+      <ProjectReference Include="..\QuickApi.Abstractions\QuickApi.Abstractions.csproj"/>
     </ItemGroup>
 </Project>

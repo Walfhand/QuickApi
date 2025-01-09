@@ -4,6 +4,12 @@
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <Title>QuickApi.Abstractions</Title>
+        <PackageId>Walfhand.QuickApi.Abstractions</PackageId>
+        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+        <Authors>Walfhand</Authors>
+        <PackageProjectUrl>https://github.com/Walfhand/QuickApi</PackageProjectUrl>
+        <Version>1.0.0</Version>
     </PropertyGroup>
 
     <ItemGroup>
