@@ -13,13 +13,10 @@
         <PackageProjectUrl>https://github.com/Walfhand/QuickApi</PackageProjectUrl>
         <Version>1.0.0</Version>
     </PropertyGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\QuickApi.Abstractions\QuickApi.Abstractions.csproj"/>
-    </ItemGroup>
     
     <ItemGroup>
       <PackageReference Include="MediatR" Version="12.4.1" />
+      <PackageReference Include="Walfhand.QuickApi.Abstractions" Version="1.0.5" />
     </ItemGroup>
 
 </Project>
