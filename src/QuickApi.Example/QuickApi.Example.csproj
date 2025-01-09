@@ -18,6 +18,7 @@
         </PackageReference>
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.2" />
         <PackageReference Include="Scalar.AspNetCore" Version="1.2.55" />
+        <PackageReference Include="Walfhand.QuickApi.Extensions.Mediatr" Version="1.0.5" />
     </ItemGroup>
 
     <ItemGroup>
@@ -28,7 +29,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\QuickApi.Engine\QuickApi.Engine.csproj" />
-      <ProjectReference Include="..\QuickApi.Extensions.Mediatr\QuickApi.Extensions.Mediatr.csproj" />
     </ItemGroup>
 
     <ItemGroup>
