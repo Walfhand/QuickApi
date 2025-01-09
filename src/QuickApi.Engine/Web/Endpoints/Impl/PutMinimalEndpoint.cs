@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Http;
-using QuickApi.Engine.Web.Cqrs;
+using QuickApi.Abstractions.Cqrs;
 using QuickApi.Engine.Web.Endpoints.Enums;
 
 namespace QuickApi.Engine.Web.Endpoints.Impl;

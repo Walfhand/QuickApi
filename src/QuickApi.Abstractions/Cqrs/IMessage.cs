@@ -1,4 +1,4 @@
-namespace QuickApi.Engine.Web.Cqrs;
+namespace QuickApi.Abstractions.Cqrs;
 
 public interface IMessage
 {

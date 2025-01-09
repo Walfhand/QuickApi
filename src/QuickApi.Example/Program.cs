@@ -2,16 +2,16 @@ using System.Net;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.OpenApi.Models;
 using QuickApi.Engine.Web;
-using QuickApi.Engine.Web.Cqrs;
 using QuickApi.Example.Config.Cors;
-using QuickApi.Example.Cqrs;
 using QuickApi.Example.Data.Configs;
+using QuickApi.Extensions.Mediatr;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddMinimalEndpoints();
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Program>());
-builder.Services.AddScoped<IMessage, MessageService>();
+builder.Services.AddMinimalEndpoints(options =>
+{
+    options.AddMediatR();
+});
 builder.Services.AddCustomCors();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddData();

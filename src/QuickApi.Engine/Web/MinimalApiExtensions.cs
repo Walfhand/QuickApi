@@ -1,20 +1,17 @@
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using QuickApi.Abstractions;
 using QuickApi.Engine.Web.Endpoints;
-using QuickApi.Engine.Web.Endpoints.Enums;
-using QuickApi.Engine.Web.Models;
 using Scrutor;
 
 namespace QuickApi.Engine.Web;
 
 public static class MinimalApiExtensions
 {
-    public static IServiceCollection AddMinimalEndpoints(this IServiceCollection services,
-        ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
+    public static IServiceCollection AddMinimalEndpoints(this IServiceCollection services, Action<MinimalApiOptions>? configure = null)
     {
+        var options = new MinimalApiOptions();
+        configure?.Invoke(options);
         services.Scan(scan =>
         {
             scan.FromAssemblies(AppDomain.CurrentDomain.GetAssemblies())
@@ -22,9 +19,11 @@ public static class MinimalApiExtensions
                     .Where(type => !type.IsAbstract))
                 .UsingRegistrationStrategy(RegistrationStrategy.Append)
                 .As<IMinimalEndpoint>()
-                .WithLifetime(serviceLifetime);
+                .WithLifetime(options.ServiceLifetime);
         });
 
+        foreach (var configuration in options.GetConfigurations())
+            configuration(services);
         return services;
     }
     

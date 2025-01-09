@@ -1,11 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
     <PropertyGroup>
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <Title>QuickApi</Title>
-        <PackageId>Walfhand.QuickApi</PackageId>
+        <Title>QuickApi.Extensions.Mediatr</Title>
+        <PackageId>Walfhand.QuickApi.Extensions.Mediatr</PackageId>
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
         <Authors>Walfhand</Authors>
         <Description>A library designed to simplify the usage of Minimal APIs in .NET by providing a framework and seamless integration with various CQRS libraries.
@@ -14,16 +13,13 @@
         <PackageProjectUrl>https://github.com/Walfhand/QuickApi</PackageProjectUrl>
         <Version>1.0.0</Version>
     </PropertyGroup>
-    <ItemGroup>
-        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
-    </ItemGroup>
-    <ItemGroup>
-      <PackageReference Include="Scrutor" Version="5.0.2" />
-    </ItemGroup>
-    <ItemGroup>
-        <Content Include="README.md" Pack="true" />
-    </ItemGroup>
+
     <ItemGroup>
       <ProjectReference Include="..\QuickApi.Abstractions\QuickApi.Abstractions.csproj" />
     </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="MediatR" Version="12.4.1" />
+    </ItemGroup>
+
 </Project>

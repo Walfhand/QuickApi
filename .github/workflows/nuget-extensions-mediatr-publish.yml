@@ -1,0 +1,42 @@
+name: Build extension mediatr and Publish to NuGet
+
+on:
+  workflow_dispatch:
+    inputs:
+      package_version:
+        description: 'Version of the package to publish'
+        required: true
+        default: '1.0.0'
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      # Setup .NET
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 9.0
+      
+      # Restore dependencies
+      - name: Restore dependencies
+        run: dotnet restore ./QuickApi.sln
+      
+      # Build the library project
+      - name: Build library
+        run: dotnet build ./src/QuickApi.Extensions.Mediatr/QuickApi.Extensions.Mediatr.csproj --configuration Release --no-restore
+      
+      # Pack the library project
+      - name: Pack library
+        run: dotnet pack ./src/QuickApi.Extensions.Mediatr/QuickApi.Extensions.Mediatr.csproj --configuration Release --no-build --output ./artifacts /p:Version=${{ github.event.inputs.package_version }}
+      
+      # Push to NuGet
+      - name: Publish to NuGet
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: dotnet nuget push ./artifacts/*.nupkg --api-key $NUGET_API_KEY --source https://api.nuget.org/v3/index.json
