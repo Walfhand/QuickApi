@@ -16,40 +16,46 @@ QuickApi is a lightweight library designed to simplify the development of Minima
 
 ## Installation
 
-QuickApi is available on [NuGet](https://www.nuget.org/packages/Walfhand.QuickApi/):
-
-```bash
-Install-Package Walfhand.QuickApi
-```
-
-Or, using the .NET CLI:
+QuickApi is available on [NuGet](https://www.nuget.org/packages/Walfhand.QuickApi/). Install the base package:
 
 ```bash
 dotnet add package Walfhand.QuickApi
+```
+
+For MediatR integration, you'll also need to install:
+
+```bash
+dotnet add package Walfhand.QuickApi.Extensions.Mediatr
 ```
 
 ## Getting Started
 
 ### Step 1: Installation
 
-Install the package using the .NET CLI:
-
-```bash
-dotnet add package Walfhand.QuickApi
-```
+Install the required packages using the .NET CLI as shown in the Installation section above.
 
 ### Step 2: Register QuickApi in your Program.cs
 
 Add the following lines to your `Program.cs` file:
 
 ```csharp
+// Basic setup
 builder.Services.AddMinimalEndpoints();
+
+// Or with MediatR integration
+builder.Services.AddMinimalEndpoints(options =>
+{
+    options.AddMediatR();
+});
+
 app.UseMinimalEndpoints();
 ```
 
 ### Step 3: Implement the IMessage Interface
 
-Implement the `IMessage` interface to use your preferred CQRS tool. Here is an example using MediatR:
+If you're using MediatR integration (configured via `options.AddMediatR()`), you can skip this step as the implementation below is already provided for you.
+
+For custom CQRS implementations, implement the `IMessage` interface. Here is an example of how the MediatR implementation looks like internally:
 
 ```csharp
 using MediatR;
@@ -57,6 +63,8 @@ using QuickApi.Engine.Web.Cqrs;
 
 namespace QuickApi.Example.Cqrs;
 
+// Note: This implementation is provided automatically when using options.AddMediatR()
+// Only implement this if you're NOT using AddMediatR() or if you need a custom implementation
 public class MessageService : IMessage
 {
     private readonly IMediator _mediator;
@@ -80,7 +88,9 @@ public class MessageService : IMessage
 
 ### Step 4: Register the Message Service
 
-Register your `MessageService` implementation in the `Program.cs` file:
+If you're using MediatR integration (configured via `options.AddMediatR()`), you can skip this step.
+
+For custom CQRS implementations, register your `MessageService` implementation in the `Program.cs` file:
 
 ```csharp
 builder.Services.AddScoped<IMessage, MessageService>();
@@ -92,6 +102,8 @@ With QuickApi, you can define endpoints anywhere in your code by implementing on
 
 #### Example: Adding a Todo Item without Policies
 
+The following example uses MediatR's CQRS implementation (`IRequest` and `IRequestHandler`). The specific interfaces will vary depending on your chosen CQRS framework:
+
 ```csharp
 using MediatR;
 using QuickApi.Engine.Web.Endpoints.Impl;
@@ -99,12 +111,14 @@ using QuickApi.Example.Features.Todos.Domain;
 
 namespace QuickApi.Example.Features.Todos.AddTodo.Endpoints;
 
+// MediatR specific: IRequest<Todo>
 public record AddTodoRequest(string Title, string? Description) : IRequest<Todo>;
 
 public class AddTodoEndpoint() : PostMinimalEndpoint<AddTodoRequest, Todo>("todos")
 {
 }
 
+// MediatR specific: IRequestHandler<AddTodoRequest, Todo>
 public class AddTodoRequestHandler : IRequestHandler<AddTodoRequest, Todo>
 {
     public Task<Todo> Handle(AddTodoRequest request, CancellationToken cancellationToken)
@@ -118,6 +132,8 @@ public class AddTodoRequestHandler : IRequestHandler<AddTodoRequest, Todo>
 
 #### Example: Adding a Todo Item with Policies
 
+Similar to the previous example, this uses MediatR's CQRS implementation:
+
 ```csharp
 using MediatR;
 using QuickApi.Engine.Web.Endpoints.Impl;
@@ -125,14 +141,16 @@ using QuickApi.Example.Features.Todos.Domain;
 
 namespace QuickApi.Example.Features.Todos.AddTodo.Endpoints;
 
+// MediatR specific: IRequest<Todo>
 public record AddTodoRequest(string Title, string? Description) : IRequest<Todo>;
 
 public class AddTodoEndpoint() : PostMinimalEndpoint<AddTodoRequest, Todo>(
-    "todos", 
+    "todos",
     nameof(PoliciesEnum.Subscribed))
 {
 }
 
+// MediatR specific: IRequestHandler<AddTodoRequest, Todo>
 public class AddTodoRequestHandler : IRequestHandler<AddTodoRequest, Todo>
 {
     public Task<Todo> Handle(AddTodoRequest request, CancellationToken cancellationToken)
@@ -160,10 +178,10 @@ public class FilterTodoEndpointCustom() : FilterMinimalEndpoint<FilterTodoReques
     {
         //call base configure and get routeHandlerBuilder
         var routeHandlerBuilder = base.Configure(builder);
-        
+
         //add your customization
         routeHandlerBuilder.ProducesProblem(500);
-        
+
         //return routeHandlerBuilder custom
         return routeHandlerBuilder;
     }
@@ -204,6 +222,7 @@ docker compose up --build
 The application will be accessible at [https://api.localhost/scalar/v1](https://api.localhost/scalar/v1), where you can test more advanced features.
 
 ### Note
+
 When inheriting from a class like `PostMinimalEndpoint`, you can add security policies to your endpoint by passing them as a `params` array in the constructor after the route.
 
 Packages will follow to simplify this integration for tools like MediatR and Wolverine.
@@ -211,5 +230,3 @@ Packages will follow to simplify this integration for tools like MediatR and Wol
 ## Contributing
 
 Contributions are welcome! If you find an issue or have an idea for improvement, feel free to submit a pull request or open an issue on the [GitHub repository](https://github.com/Walfhand/QuickApi).
-
-
