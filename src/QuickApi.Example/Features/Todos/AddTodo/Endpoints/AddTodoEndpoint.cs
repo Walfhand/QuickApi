@@ -13,10 +13,7 @@ public record AddTodoRequest : IRequest<Todo>
     public record AddTodoRequestBody(string Title, string? Description);
 }
 
-public class AddTodoEndpoint() : PostMinimalEndpoint<AddTodoRequest, Todo>("todos")
-{
-    
-}
+public class AddTodoEndpoint() : PostMinimalEndpoint<AddTodoRequest, Todo>("todos");
 
 public class AddTodoRequestHandler : IRequestHandler<AddTodoRequest, Todo>
 {

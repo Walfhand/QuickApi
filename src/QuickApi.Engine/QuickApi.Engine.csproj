@@ -22,7 +22,7 @@
         <None Include="README.md" Pack="true" PackagePath="\"/>
     </ItemGroup>
     <ItemGroup>
-      <PackageReference Include="Scrutor" Version="5.0.2" />
+      <PackageReference Include="Scrutor" Version="6.0.1" />
       <PackageReference Include="Walfhand.QuickApi.Abstractions" Version="1.0.5" />
     </ItemGroup>
     <ItemGroup>
