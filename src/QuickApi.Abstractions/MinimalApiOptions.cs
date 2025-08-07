@@ -7,7 +7,11 @@ public class MinimalApiOptions
     private readonly List<Action<IServiceCollection>> _additionalConfigurations = [];
 
     public ServiceLifetime ServiceLifetime { get; set; } = ServiceLifetime.Scoped;
-    public static string ApiPath { get; set; } = "api";
+
+    public static void SetBaseApiPath(string baseApiPath)
+    {
+        ApiPathProvider.BaseApiPath = baseApiPath;
+    }
     
     internal void AddConfiguration(Action<IServiceCollection> configuration)
     {
@@ -15,4 +19,9 @@ public class MinimalApiOptions
     }
     
     public IReadOnlyList<Action<IServiceCollection>> GetConfigurations() => _additionalConfigurations.AsReadOnly();
+}
+
+public static class ApiPathProvider
+{
+    public static string BaseApiPath { get; set; } = "api";
 }
