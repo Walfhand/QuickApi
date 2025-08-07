@@ -8,7 +8,7 @@ public class MinimalApiOptions
 
     public ServiceLifetime ServiceLifetime { get; set; } = ServiceLifetime.Scoped;
 
-    public static void SetBaseApiPath(string baseApiPath)
+    public void SetBaseApiPath(string baseApiPath)
     {
         ApiPathProvider.BaseApiPath = baseApiPath;
     }
