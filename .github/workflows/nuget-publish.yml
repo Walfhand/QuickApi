@@ -25,7 +25,7 @@ jobs:
       
       # Restore dependencies
       - name: Restore dependencies
-        run: dotnet restore ./QuickApi.sln
+        run: dotnet restore ./src/QuickApi.Engine/QuickApi.Engine.csproj
       
       # Build the library project
       - name: Build library
