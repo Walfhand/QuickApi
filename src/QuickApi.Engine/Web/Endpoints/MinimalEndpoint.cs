@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using QuickApi.Abstractions;
 using QuickApi.Engine.Web.Endpoints.Enums;
 using QuickApi.Engine.Web.Models;
 
@@ -44,7 +45,7 @@ public abstract class MinimalEndpoint<TResult> : IMinimalEndpoint
         EndpointType endpointType, [StringSyntax("Route")] string pattern, Delegate handler)
     {
         var context = pattern.Split('/').First();
-        return CreateConvention<TEntity>(builder,endpointType, $"{EndpointPath.BaseApiPath}/{pattern}", handler)
+        return CreateConvention<TEntity>(builder,endpointType, $"{ApiPathProvider.BaseApiPath}/{pattern}", handler)
             .WithTags(context);
     }
     

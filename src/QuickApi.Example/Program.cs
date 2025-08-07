@@ -11,6 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddMinimalEndpoints(options =>
 {
     options.AddMediatR();
+    options.SetBaseApiPath("api/v1");
 });
 builder.Services.AddCustomCors();
 builder.Services.AddHttpContextAccessor();

@@ -21,7 +21,7 @@ public static class MinimalApiExtensions
                 .As<IMinimalEndpoint>()
                 .WithLifetime(options.ServiceLifetime);
         });
-
+        
         foreach (var configuration in options.GetConfigurations())
             configuration(services);
         return services;

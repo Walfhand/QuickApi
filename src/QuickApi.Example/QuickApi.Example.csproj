@@ -9,7 +9,6 @@
 
     <ItemGroup>
         <PackageReference Include="EFCore.NamingConventions" Version="9.0.0" />
-        <PackageReference Include="MediatR" Version="12.4.1" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.2" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.2" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.2">
@@ -18,7 +17,6 @@
         </PackageReference>
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
         <PackageReference Include="Scalar.AspNetCore" Version="2.0.20" />
-        <PackageReference Include="Walfhand.QuickApi.Extensions.Mediatr" Version="1.0.5" />
     </ItemGroup>
 
     <ItemGroup>
@@ -28,7 +26,9 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\QuickApi.Abstractions\QuickApi.Abstractions.csproj" />
       <ProjectReference Include="..\QuickApi.Engine\QuickApi.Engine.csproj" />
+      <ProjectReference Include="..\QuickApi.Extensions.Mediatr\QuickApi.Extensions.Mediatr.csproj" />
     </ItemGroup>
 
     <ItemGroup>
