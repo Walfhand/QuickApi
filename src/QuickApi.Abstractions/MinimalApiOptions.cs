@@ -7,6 +7,7 @@ public class MinimalApiOptions
     private readonly List<Action<IServiceCollection>> _additionalConfigurations = [];
 
     public ServiceLifetime ServiceLifetime { get; set; } = ServiceLifetime.Scoped;
+    public static string ApiPath { get; set; } = "api";
     
     internal void AddConfiguration(Action<IServiceCollection> configuration)
     {
