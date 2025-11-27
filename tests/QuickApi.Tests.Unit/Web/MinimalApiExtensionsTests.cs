@@ -4,6 +4,7 @@ using QuickApi.Engine.Web;
 using QuickApi.Engine.Web.Endpoints;
 using Microsoft.AspNetCore.Routing;
 using NSubstitute;
+using QuickApi.Tests.Unit.Web.Fakes;
 
 namespace QuickApi.Tests.Unit.Web;
 
@@ -21,7 +22,7 @@ public class MinimalApiExtensionsTests
         
         // Assert
         var endpoints = provider.GetServices<IMinimalEndpoint>();
-        endpoints.Should().NotBeEmpty();
+        endpoints.Should().ContainSingle(e => e is DummyEndpoint);
     }
     
     [Fact]
@@ -46,6 +47,7 @@ public class MinimalApiExtensionsTests
     {
         // Arrange
         var services = new ServiceCollection();
+        services.AddScoped<IMinimalEndpoint, DummyEndpoint>();
         var endpoint1 = Substitute.For<IMinimalEndpoint>();
         var endpoint2 = Substitute.For<IMinimalEndpoint>();
         
