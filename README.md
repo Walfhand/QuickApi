@@ -10,7 +10,11 @@ QuickApi is a lightweight library designed to simplify the development of Minima
 ## Features
 
 - **Effortless Minimal API Setup**: Simplifies configuration and reduces the boilerplate code.
+- **Automatic Endpoint Discovery**: Scans loaded assemblies and registers every non-abstract `IMinimalEndpoint` with a configurable lifetime.
 - **CQRS Integration**: Built-in support for MediatR and Wolverine for handling commands, queries, and events.
+- **Configurable API Prefix & Tags**: Routes are automatically prefixed (default `api`) and tagged using the first path segment for better OpenAPI grouping.
+- **Response Conventions**: Base endpoints wire sensible `Produces(...)`/`ProducesProblem(...)` metadata (e.g., 201 on POST, 204 on PUT/PATCH/DELETE, 404 on GET).
+- **Paginated & File Helpers**: `PaginatedResult<T>` and `FileResult` helpers for list and file endpoints.
 - **Developer Friendly**: Focuses on improving productivity and code readability.
 - **NuGet Package**: Easily installable via NuGet.
 
@@ -50,6 +54,16 @@ builder.Services.AddMinimalEndpoints(options =>
 
 app.UseMinimalEndpoints();
 ```
+
+To change the global API prefix (defaults to `api`):
+
+```csharp
+builder.Services.AddMinimalEndpoints(options =>
+{
+    options.SetBaseApiPath("api/v1");
+});
+```
+All endpoints will then be exposed as `/api/v1/<your-path>`.
 
 ### Step 3: Implement the IMessage Interface
 
@@ -96,13 +110,29 @@ For custom CQRS implementations, register your `MessageService` implementation i
 builder.Services.AddScoped<IMessage, MessageService>();
 ```
 
+### Configuration Notes (MinimalApiOptions)
+
+- **Endpoint lifetime**: defaults to `Scoped`. Override with `options.ServiceLifetime = ServiceLifetime.Transient;` (or `Singleton`) when registering endpoints.
+- **Additional service wiring**: use `options.AddConfiguration(...)` to plug extra registrations alongside QuickApi (the MediatR extension uses this internally):
+
+```csharp
+builder.Services.AddMinimalEndpoints(options =>
+{
+    options.AddConfiguration(services =>
+    {
+        services.AddSingleton<IMyDependency, MyDependency>();
+    });
+});
+```
+- **Route prefix & tags**: routes are automatically prefixed with the configured base path and tagged using the first segment of the route (e.g., `todos`) for cleaner Swagger grouping.
+
 ### Step 5: Adding Endpoints
 
-With QuickApi, you can define endpoints anywhere in your code by implementing one of the provided endpoint base classes.
+With QuickApi, you can define endpoints anywhere in your code by implementing one of the provided endpoint base classes. `AddMinimalEndpoints` automatically discovers every non-abstract implementation of `IMinimalEndpoint` in the loaded assemblies and maps them with the configured lifetime.
 
 #### Example: Adding a Todo Item without Policies
 
-The following example uses MediatR's CQRS implementation (`IRequest` and `IRequestHandler`). The specific interfaces will vary depending on your chosen CQRS framework:
+The following example uses MediatR's CQRS implementation (`IRequest` for commands/queries + `IRequestHandler`). The specific interfaces will vary depending on your chosen CQRS framework:
 
 ```csharp
 using MediatR;
@@ -111,7 +141,7 @@ using QuickApi.Example.Features.Todos.Domain;
 
 namespace QuickApi.Example.Features.Todos.AddTodo.Endpoints;
 
-// MediatR specific: IRequest<Todo>
+// MediatR specific: IRequest<Todo> (command)
 public record AddTodoRequest(string Title, string? Description) : IRequest<Todo>;
 
 public class AddTodoEndpoint() : PostMinimalEndpoint<AddTodoRequest, Todo>("todos")
@@ -141,7 +171,7 @@ using QuickApi.Example.Features.Todos.Domain;
 
 namespace QuickApi.Example.Features.Todos.AddTodo.Endpoints;
 
-// MediatR specific: IRequest<Todo>
+// MediatR specific: IRequest<Todo> (command)
 public record AddTodoRequest(string Title, string? Description) : IRequest<Todo>;
 
 public class AddTodoEndpoint() : PostMinimalEndpoint<AddTodoRequest, Todo>(
@@ -200,16 +230,86 @@ public class FilterTodoEndpointCustom() : FilterMinimalEndpoint<FilterTodoReques
 
 ### Available Endpoint Base Classes
 
-QuickApi provides several base classes to simplify the creation of endpoints:
+QuickApi provides several base classes to simplify the creation of endpoints (each adds default `Produces(...)` metadata for common status codes):
 
 - **`PostMinimalEndpoint`**: For POST requests.
 - **`GetMinimalEndpoint`**: For GET requests.
 - **`PutMinimalEndpoint`**: For PUT requests.
 - **`DeleteMinimalEndpoint`**: For DELETE requests.
 - **`PatchMinimalEndpoint`**: For PATCH requests.
-- **`FilterMinimalEndpoint`**: For filtered GET requests.
-- **`FilterPaginateMinimalEndpoint`**: For paginated and filtered GET requests.
-- **`GetFileMinimalEndpoint`**: For serving files.
+- **`FilterMinimalEndpoint`**: For filtered GET requests returning `List<T>`.
+- **`FilterPaginateMinimalEndpoint`**: For paginated and filtered GET requests returning `PaginatedResult<T>`.
+- **`GetFileMinimalEndpoint`**: For serving files using `FileResult`.
+
+#### Paginated filtering example
+
+```csharp
+using MediatR;
+using QuickApi.Engine.Web.Endpoints.Impl;
+using QuickApi.Engine.Web.Models;
+
+public record FilterTodosPaginatedRequest(int PageIndex = 1, int PageSize = 20)
+    : IRequest<PaginatedResult<Todo>>;
+
+public class FilterTodosPaginatedEndpoint()
+    : FilterPaginateMinimalEndpoint<FilterTodosPaginatedRequest, Todo>("todos/paginated");
+```
+
+`PaginatedResult<T>` exposes `Items`, `TotalCount`, `PageIndex`, and `PageSize`.
+
+#### File endpoint example
+
+```csharp
+using MediatR;
+using QuickApi.Engine.Web.Endpoints.Impl;
+using QuickApi.Engine.Web.Models;
+
+public record DownloadInvoiceRequest(Guid Id) : IRequest<FileResult>;
+
+public class DownloadInvoiceEndpoint()
+    : GetFileMinimalEndpoint<DownloadInvoiceRequest, FileResult>("invoices/{id:guid}");
+```
+
+### Commands/Queries & Model Binding
+
+- Your request types (commands/queries) are plain classes/records that implement MediatR’s `IRequest`/`IRequest<T>`. They are passed directly to the `IMessage` pipeline, so your handlers stay unchanged.
+- You can compose requests with standard ASP.NET binding attributes:
+
+```csharp
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
+
+// Example command that mixes route and body binding
+public record UpdateTodoRequest(
+    [FromRoute] Guid Id,
+    [FromBody] UpdateTodoBody Body) : IRequest;
+
+public record UpdateTodoBody(string Title, string? Description);
+
+public class UpdateTodoEndpoint()
+    : PutMinimalEndpoint<UpdateTodoRequest>("todos/{id:guid}");
+```
+
+```csharp
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
+
+// Example query with query-string binding
+public record FilterTodosRequest(
+    [FromQuery] bool? IsCompleted,
+    [FromQuery] int PageIndex = 1,
+    [FromQuery] int PageSize = 20) : IRequest<PaginatedResult<Todo>>;
+
+public class FilterTodosEndpoint()
+    : FilterPaginateMinimalEndpoint<FilterTodosRequest, Todo>("todos");
+```
+
+### Response conventions
+
+- `GetMinimalEndpoint` returns `200` + `404` metadata.
+- `PostMinimalEndpoint` returns `201` + validation problem metadata.
+- `PutMinimalEndpoint`, `PatchMinimalEndpoint`, and `DeleteMinimalEndpoint` return `204` + `404` + validation problem metadata.
+- `FilterMinimalEndpoint` returns `200 List<T>`; `FilterPaginateMinimalEndpoint` returns `200 PaginatedResult<T>`.
 
 ### Example Project
 
