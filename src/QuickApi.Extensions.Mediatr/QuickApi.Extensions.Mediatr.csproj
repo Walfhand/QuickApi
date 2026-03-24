@@ -15,7 +15,7 @@
     </PropertyGroup>
     
     <ItemGroup>
-      <PackageReference Include="MediatR" Version="13.1.0" />
+      <PackageReference Include="MediatR" Version="14.1.0" />
       <PackageReference Include="Walfhand.QuickApi.Abstractions" Version="2.0.0" />
     </ItemGroup>
 
