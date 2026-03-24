@@ -43,6 +43,25 @@ public class MinimalApiExtensionsTests
     }
 
     [Fact]
+    public void AddMinimalEndpoints_WithExplicitAssemblies_ShouldOnlyScanProvidedAssemblies()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddMinimalEndpoints(options =>
+        {
+            options.AddAssemblies(typeof(string).Assembly);
+        });
+
+        var provider = services.BuildServiceProvider();
+
+        // Assert
+        var endpoints = provider.GetServices<IMinimalEndpoint>();
+        endpoints.Should().BeEmpty();
+    }
+
+    [Fact]
     public void UseMinimalEndpoints_ShouldMapAllRegisteredEndpoints()
     {
         // Arrange
@@ -64,5 +83,47 @@ public class MinimalApiExtensionsTests
         // Assert
         endpoint1.Received(1).MapEndpoint(builder);
         endpoint2.Received(1).MapEndpoint(builder);
+    }
+
+    [Fact]
+    public void UseMinimalEndpoints_ShouldDisposeScopeAfterMapping()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddSingleton<DisposalState>();
+        services.AddScoped<ScopedDisposableDependency>();
+        services.AddScoped<IMinimalEndpoint, DisposableAwareEndpoint>();
+
+        var serviceProvider = services.BuildServiceProvider();
+        var builder = Substitute.For<IEndpointRouteBuilder>();
+        builder.ServiceProvider.Returns(serviceProvider);
+
+        // Act
+        builder.UseMinimalEndpoints();
+
+        // Assert
+        var state = serviceProvider.GetRequiredService<DisposalState>();
+        state.ScopedDependencyDisposeCount.Should().Be(1);
+    }
+
+    private sealed class DisposalState
+    {
+        public int ScopedDependencyDisposeCount { get; set; }
+    }
+
+    private sealed class ScopedDisposableDependency(DisposalState state) : IDisposable
+    {
+        public void Dispose()
+        {
+            state.ScopedDependencyDisposeCount++;
+        }
+    }
+
+    private sealed class DisposableAwareEndpoint(ScopedDisposableDependency dependency) : IMinimalEndpoint
+    {
+        public void MapEndpoint(IEndpointRouteBuilder builder)
+        {
+            _ = dependency;
+        }
     }
 }

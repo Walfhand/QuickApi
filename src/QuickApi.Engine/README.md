@@ -56,7 +56,7 @@ builder.Services.AddMinimalEndpoints();
 // Or with MediatR integration
 builder.Services.AddMinimalEndpoints(options =>
 {
-    options.AddMediatR();
+    options.AddMediatR(typeof(Program).Assembly);
 });
 
 app.UseMinimalEndpoints();
@@ -120,15 +120,14 @@ builder.Services.AddScoped<IMessage, MessageService>();
 ### Configuration Notes (MinimalApiOptions)
 
 - **Endpoint lifetime**: defaults to `Scoped`. Override with `options.ServiceLifetime = ServiceLifetime.Transient;` (or `Singleton`) when registering endpoints.
-- **Additional service wiring**: use `options.AddConfiguration(...)` to plug extra registrations alongside QuickApi (the MediatR extension uses this internally):
+- **Assembly scanning (recommended)**: limit scanning for endpoint discovery with `options.AddAssemblies(...)` to improve startup determinism and performance:
 
 ```csharp
 builder.Services.AddMinimalEndpoints(options =>
 {
-    options.AddConfiguration(services =>
-    {
-        services.AddSingleton<IMyDependency, MyDependency>();
-    });
+    options.AddAssemblies(
+        typeof(Program).Assembly,
+        typeof(TodosAssemblyMarker).Assembly);
 });
 ```
 - **Route prefix & tags**: routes are automatically prefixed with the configured base path and tagged using the first segment of the route (e.g., `todos`) for cleaner Swagger grouping.
