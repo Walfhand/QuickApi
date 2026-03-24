@@ -57,6 +57,8 @@ public abstract class MinimalEndpoint<TResult> : IMinimalEndpoint
                 .Produces<PaginatedResult<TEntity>>(),
             EndpointType.Filter => builder.MapGet(path, handler)
                 .Produces<List<TEntity>>(),
+            EndpointType.Sse => builder.MapGet(path, handler)
+                .Produces(StatusCodes.Status200OK, contentType: "text/event-stream"),
             EndpointType.Get => builder.MapGet(path, handler)
                 .Produces<TEntity>()
                 .ProducesProblem(404),

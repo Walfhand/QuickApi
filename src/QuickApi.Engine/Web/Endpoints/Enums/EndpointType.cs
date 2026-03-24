@@ -5,6 +5,7 @@ public enum EndpointType
     Get,
     Filter,
     FilterPaginate,
+    Sse,
     Post,
     Put,
     Patch,

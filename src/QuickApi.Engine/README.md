@@ -18,6 +18,13 @@ QuickApi is a lightweight library designed to simplify the development of Minima
 - **Developer Friendly**: Focuses on improving productivity and code readability.
 - **NuGet Package**: Easily installable via NuGet.
 
+## What's New (2026-03-24)
+
+- Added `SseMinimalEndpoint<TRequest, TEvent>` for native SSE endpoints (`text/event-stream`).
+- Added SSE OpenAPI convention: `Produces(200, "text/event-stream")`.
+- Added a concrete example endpoint in `QuickApi.Example`: `GET /api/v1/todos/stream`.
+- Added SSE unit coverage with `TestServer` to validate status code, content type, and event payload format.
+
 ## Installation
 
 QuickApi is available on [NuGet](https://www.nuget.org/packages/Walfhand.QuickApi/). Install the base package:
@@ -240,6 +247,7 @@ QuickApi provides several base classes to simplify the creation of endpoints (ea
 - **`FilterMinimalEndpoint`**: For filtered GET requests returning `List<T>`.
 - **`FilterPaginateMinimalEndpoint`**: For paginated and filtered GET requests returning `PaginatedResult<T>`.
 - **`GetFileMinimalEndpoint`**: For serving files using `FileResult`.
+- **`SseMinimalEndpoint`**: For SSE streams (`text/event-stream`) with `IAsyncEnumerable<T>` messages.
 
 #### Paginated filtering example
 
@@ -269,6 +277,80 @@ public record DownloadInvoiceRequest(Guid Id) : IRequest<FileResult>;
 public class DownloadInvoiceEndpoint()
     : GetFileMinimalEndpoint<DownloadInvoiceRequest, FileResult>("invoices/{id:guid}");
 ```
+
+#### SSE endpoint example
+
+```csharp
+using System.Runtime.CompilerServices;
+using System.Text.Json;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using QuickApi.Engine.Web.Endpoints.Impl;
+using QuickApi.Example.Data.Contexts;
+using QuickApi.Example.Features.Todos.Domain;
+
+public record StreamTodosRequest
+{
+    [FromQuery] public bool? IsCompleted { get; set; }
+    [FromQuery] public int PollIntervalSeconds { get; set; } = 3;
+    [FromQuery] public bool IncludeHeartbeat { get; set; } = true;
+}
+
+public sealed record TodoStreamItem(Guid Id, string Title, string? Description, bool IsCompleted);
+public sealed record StreamTodosEvent(long Sequence, string Name, int RetryMilliseconds, object Payload);
+
+public class StreamTodosEndpoint : SseMinimalEndpoint<StreamTodosRequest, StreamTodosEvent>
+{
+    public StreamTodosEndpoint() : base("todos/stream")
+    {
+    }
+
+    protected override async IAsyncEnumerable<StreamTodosEvent> Stream(
+        StreamTodosRequest request,
+        HttpContext httpContext,
+        [EnumeratorCancellation] CancellationToken ct)
+    {
+        var dbContext = httpContext.RequestServices.GetRequiredService<IDbContext>();
+        var intervalSeconds = Math.Clamp(request.PollIntervalSeconds, 1, 30);
+        var retryMilliseconds = intervalSeconds * 1000;
+        var sequence = 0L;
+
+        while (!ct.IsCancellationRequested && !httpContext.RequestAborted.IsCancellationRequested)
+        {
+            var query = dbContext.Set<Todo>().AsNoTracking();
+            if (request.IsCompleted.HasValue)
+                query = query.Where(x => x.IsCompleted == request.IsCompleted.Value);
+
+            var items = await query
+                .OrderBy(x => x.Id.Value)
+                .Select(x => new TodoStreamItem(x.Id.Value, x.Title, x.Description, x.IsCompleted))
+                .ToListAsync(ct);
+
+            sequence++;
+            yield return new StreamTodosEvent(sequence, "todos-snapshot", retryMilliseconds, new
+            {
+                Items = items,
+                SentAtUtc = DateTimeOffset.UtcNow
+            });
+
+            await Task.Delay(TimeSpan.FromSeconds(intervalSeconds), ct);
+        }
+    }
+
+    protected override async Task WriteEventAsync(HttpResponse response, StreamTodosEvent payload, CancellationToken ct)
+    {
+        await response.WriteAsync($"id: {payload.Sequence}\n", ct);
+        await response.WriteAsync($"retry: {payload.RetryMilliseconds}\n", ct);
+        await response.WriteAsync($"event: {payload.Name}\n", ct);
+        await response.WriteAsync($"data: {JsonSerializer.Serialize(payload.Payload)}\n\n", ct);
+    }
+}
+```
+
+`QuickApi.Example` also shows heartbeat + change-detection mode in:
+`src/QuickApi.Example/Features/Todos/StreamTodos/Endpoints/StreamTodosEndpoint.cs`
 
 ### Commands/Queries & Model Binding
 
@@ -310,6 +392,7 @@ public class FilterTodosEndpoint()
 - `PostMinimalEndpoint` returns `201` + validation problem metadata.
 - `PutMinimalEndpoint`, `PatchMinimalEndpoint`, and `DeleteMinimalEndpoint` return `204` + `404` + validation problem metadata.
 - `FilterMinimalEndpoint` returns `200 List<T>`; `FilterPaginateMinimalEndpoint` returns `200 PaginatedResult<T>`.
+- `SseMinimalEndpoint` returns `200 text/event-stream`.
 
 ### Example Project
 
